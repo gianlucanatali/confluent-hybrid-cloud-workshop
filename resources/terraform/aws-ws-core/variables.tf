@@ -1,34 +1,24 @@
-/*
-  workshop-core variables
-*/
-
+// Workshop variables
 variable "name" {
   description = "The Prefix used for all resources in this example"
 }
 
 variable "participant_count" {
-  description = "How number of participants attending the workshop"
+  description = "How many instances of this sample you want to create?"
   type        = number
 }
 
 variable "participant_password" {
-  description = "SSH password for the participant"
+  description = "Password for the admin user, to log in from ssh"
 }
 
+// AWS variables
 variable "region" {
   default = "us-central1"
 }
 
 variable "vm_type" {
   description = "VM Type"
-}
-
-variable "access_key" {
-  description = "AWS Access Key"
-}
-
-variable "secret_key" {
-  description = "AWS Secret Key"
 }
 
 // Confluent Cloud variables
@@ -50,5 +40,12 @@ variable "ccloud_topics" {
 
 variable "feedback_form_url" {
   description = "Feedback Form Url"
-  default = ""
+}
+
+variable "bootstrap_vm_template_path" { 
+  description = "File path of the bootstrap_vm.tpl"
+}
+
+variable "bootstrap_docker_template_path" { 
+  description = "File path of the bootstrap_docker.tpl"
 }
