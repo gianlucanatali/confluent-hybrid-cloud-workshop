@@ -55,8 +55,8 @@ if int(config['workshop']['participant_count']) > 35:
 #----------------------------------------
 
 # Copy core terraform files to terraform staging
-copytree(os.path.join("./core/terraform", config['workshop']['core']['cloud_provider']), terraform_staging)
-copytree("./core/terraform/common", os.path.join(terraform_staging, "common"))
+copytree(os.path.join("./workshops/default/terraform", config['workshop']['core']['cloud_provider']), terraform_staging)
+copytree("./resources/common", os.path.join(terraform_staging, "common"))
 
 # Copy extension terraform files to terraform staging
 if 'extensions' in config['workshop'] and config['workshop']['extensions'] != None:
@@ -92,10 +92,10 @@ if os.path.exists(docker_staging):
 # Create staging directory and copy the required docker files into it
 os.mkdir(docker_staging)
 os.mkdir(os.path.join(docker_staging, "extensions"))
-copytree("./core/docker/", docker_staging)
+copytree("./workshops/default/docker/", docker_staging)
 
 # Copy asciidoc directory to .docker_staging
-copytree(os.path.join("./core/asciidoc"), os.path.join(docker_staging, "asciidoc"))
+copytree(os.path.join("./workshops/default/asciidoc"), os.path.join(docker_staging, "asciidoc"))
 
 # Deal with extensions
 if 'extensions' in config['workshop'] and config['workshop']['extensions'] != None:

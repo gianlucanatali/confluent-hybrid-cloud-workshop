@@ -41,3 +41,11 @@ variable "ccloud_topics" {
 variable "feedback_form_url" {
   description = "Feedback Form Url"
 }
+
+variable "bootstrap_vm_template_path" { 
+  description = "File path of the bootstrap_vm.tpl"
+}
+
+variable "bootstrap_docker_template_path" { 
+  description = "File path of the bootstrap_docker.tpl"
+}
