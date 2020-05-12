@@ -6,13 +6,13 @@ This repository allows you to configure and provision a cloud-based workshop usi
 
 For a single workshop participant, the logical architecture looks like this.
 
-![workshop](core/asciidoc/images/architecture.png)
+![workshop](cores/default/asciidoc/images/architecture.png)
 
 From a physical architecture point of view, each component, except for Confluent Cloud, is hosted on the participant's virtual machine. 
 
 Each workshop participant will work through a series of Labs to create the following KSQL Supply & Demand Application.
 
-![workshop](core/asciidoc/images/KSQL_topology.png)
+![workshop](cores/default/asciidoc/images/KSQL_topology.png)
 
 ## Prerequisites
 
