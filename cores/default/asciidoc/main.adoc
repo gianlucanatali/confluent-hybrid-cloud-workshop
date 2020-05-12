@@ -509,7 +509,7 @@ You should see something like this:-
 
 Copyright 2017-2019 Confluent Inc.
 
-CLI v5.4.0, Server v5.4.0 located at http://ksql-server-ccloud:8088
+CLI v5.5.0, Server v5.5.0 located at http://ksql-server-ccloud:8088
 
 Having trouble? Type 'help' (case-insensitive) for a rundown of how things work!
 
@@ -1681,8 +1681,8 @@ Create the windowed query
 *SET* 'auto.offset.reset'='earliest';
 *CREATE TABLE* product_demand_last_3mins_tbl *WITH* (PARTITIONS = 1, KAFKA_TOPIC = '{dc}_product_demand_last_3mins') 
 *AS SELECT*
-      timestamptostring(windowStart(),'HH:mm:ss') "WINDOW_START_TIME"
-    , timestamptostring(windowEnd(),'HH:mm:ss') "WINDOW_END_TIME"
+      timestamptostring(WINDOWSTART,'HH:mm:ss') "WINDOW_START_TIME"
+    , timestamptostring(WINDOWEND,'HH:mm:ss') "WINDOW_END_TIME"
     , product_id
     , *SUM*(product_qty) "DEMAND_LAST_3MINS"
 *FROM* sales_enriched

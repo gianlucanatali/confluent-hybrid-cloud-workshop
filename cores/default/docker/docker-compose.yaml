@@ -1,7 +1,7 @@
 version: "2.1"
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.4.0
+    image: confluentinc/cp-zookeeper:5.5.0
     hostname: zookeeper
     container_name: zookeeper
     ports:
@@ -11,7 +11,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
 
   broker:
-    image: confluentinc/cp-enterprise-kafka:5.4.0
+    image: confluentinc/cp-server:5.5.0
     hostname: broker
     container_name: broker
     depends_on:
@@ -26,6 +26,7 @@ services:
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_LOG_RETENTION_HOURS: 6
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
       CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -34,7 +35,7 @@ services:
       CONFLUENT_SUPPORT_CUSTOMER_ID: "anonymous"
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:5.4.0
+    image: confluentinc/cp-schema-registry:5.5.0
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -47,7 +48,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper:2181"
 
   kafka-connect-onprem:
-    image: confluentinc/cp-kafka-connect:5.4.0
+    image: confluentinc/cp-kafka-connect:5.5.0
     container_name: kafka-connect-onprem
     hostname: kafka-connect-onprem
     depends_on:
@@ -71,7 +72,7 @@ services:
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect-onprem"
       CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
       CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
@@ -80,15 +81,17 @@ services:
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components/"
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
-      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-5.4.0.jar
+      CLASSPATH: "/usr/share/java/monitoring-interceptors/monitoring-interceptors-5.5.0.jar:/usr/share/java/kafka-connect-replicator/replicator-rest-extension-5.5.0.jar"
       CONNECT_CONFIG_PROVIDERS: "file"
       CONNECT_CONFIG_PROVIDERS_FILE_CLASS: "org.apache.kafka.common.config.provider.FileConfigProvider"
+      # Replicator Monitorning
+      CONNECT_REST_EXTENSION_CLASSES: io.confluent.connect.replicator.monitoring.ReplicatorMonitoringExtension
     command:
       - bash
       - -c
       - |
         apt-get -qq update
-        apt-get install -y confluent-kafka-connect-replicator=5.4.0-1
+        apt-get install -y confluent-kafka-connect-replicator=5.5.0-1
         apt-get clean && rm -rf /tmp/* /var/lib/apt/lists/*
         confluent-hub install --no-prompt debezium/debezium-connector-mysql:0.10.0
         confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:latest
@@ -103,7 +106,7 @@ services:
       - .env:/secrets.properties
 
   kafka-connect-ccloud:
-    image: confluentinc/cp-kafka-connect:5.4.0
+    image: confluentinc/cp-kafka-connect:5.5.0
     container_name: kafka-connect-ccloud
     hostname: kafka-connect-ccloud
     depends_on:
@@ -132,7 +135,7 @@ services:
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect-ccloud"
       CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
       CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "3"
@@ -145,7 +148,7 @@ services:
       # Interceptor config
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
-      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-5.4.0.jar
+      CLASSPATH: "/usr/share/java/monitoring-interceptors/monitoring-interceptors-5.5.0.jar:/usr/share/java/kafka-connect-replicator/replicator-rest-extension-5.5.0.jar"
       # Producer config
       CONNECT_PRODUCER_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
       CONNECT_PRODUCER_SECURITY_PROTOCOL: SASL_SSL
@@ -158,12 +161,15 @@ services:
       CONNECT_CONSUMER_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="${CCLOUD_API_KEY}" password="${CCLOUD_API_SECRET}";
       CONNECT_CONFIG_PROVIDERS: "file"
       CONNECT_CONFIG_PROVIDERS_FILE_CLASS: "org.apache.kafka.common.config.provider.FileConfigProvider"
+      # Replicator Monitorning
+      CONNECT_REST_EXTENSION_CLASSES: io.confluent.connect.replicator.monitoring.ReplicatorMonitoringExtension
+ 
     command:
       - bash
       - -c
       - |
         apt-get -qq update
-        apt-get install -y confluent-kafka-connect-replicator=5.4.0-1
+        apt-get install -y confluent-kafka-connect-replicator=5.5.0-1
         apt-get clean && rm -rf /tmp/* /var/lib/apt/lists/*
         confluent-hub install --no-prompt confluentinc/kafka-connect-gcs-source:1.1.0-preview
         confluent-hub install --no-prompt wepay/kafka-connect-bigquery:1.6.1
@@ -183,7 +189,7 @@ services:
       - .env:/secrets.properties
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center:5.4.0
+    image: confluentinc/cp-enterprise-control-center:5.5.0
     hostname: control-center
     container_name: control-center
     depends_on:
@@ -223,7 +229,7 @@ services:
 
 
   ksql-server-ccloud:
-    image: confluentinc/cp-ksql-server:5.4.0
+    image: confluentinc/cp-ksqldb-server:5.5.0
     hostname: ksql-server-ccloud
     container_name: ksql-server-ccloud
     depends_on:
@@ -267,7 +273,7 @@ services:
       KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
 
   ksql-cli:
-    image: confluentinc/cp-ksql-cli:5.4.0
+    image: confluentinc/cp-ksqldb-cli:5.5.0
     container_name: ksql-cli
     depends_on:
       - broker
@@ -285,7 +291,7 @@ services:
       - ./asciidoc:/usr/share/nginx/html
  
   create-cloud-topics:
-    image: confluentinc/cp-kafka:5.4.0
+    image: confluentinc/cp-kafka:5.5.0
     hostname: create-cloud-topics
     container_name: create-cloud-topics
     volumes:

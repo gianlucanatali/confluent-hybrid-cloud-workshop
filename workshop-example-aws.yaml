@@ -19,6 +19,7 @@ workshop:
     secret_key: <secret key>
     region: eu-west-2
     vm_type: t2.xlarge
+    type: default
 
     # The workshop Confluent Cloud configuration
     ccloud_bootstrap_servers: <CCloud Bootstrap Server>
